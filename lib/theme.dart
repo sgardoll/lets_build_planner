@@ -6,7 +6,7 @@ String? get appFontFamily => 'Delight';
 const List<String> appFontFallback = ['Roboto', 'Noto Sans', 'Arial', 'Helvetica'];
 
 class LightModeColors {
-  static const lightPrimary = Color(0xFF1565C0);
+  static const lightPrimary = Color(0xFFFF5722);
   static const lightOnPrimary = Color(0xFFFFFFFF);
   static const lightPrimaryContainer = Color(0xFFBBDEFB);
   static const lightOnPrimaryContainer = Color(0xFF0D47A1);
@@ -22,7 +22,7 @@ class LightModeColors {
   static const lightShadow = Color(0xFF000000);
   static const lightSurface = Color(0xFFFAFBFF);
   static const lightOnSurface = Color(0xFF1A1C1E);
-  static const lightAppBarBackground = Color(0xFFE3F2FD);
+  static const lightAppBarBackground = Color(0xFFFF5722);
   
   // Content type colors
   static const tutorial = Color(0xFFBBDEFB);
@@ -33,7 +33,7 @@ class LightModeColors {
 }
 
 class DarkModeColors {
-  static const darkPrimary = Color(0xFF64B5F6);
+  static const darkPrimary = Color(0xFFFF5722);
   static const darkOnPrimary = Color(0xFF0D47A1);
   static const darkPrimaryContainer = Color(0xFF1565C0);
   static const darkOnPrimaryContainer = Color(0xFFE3F2FD);
@@ -49,7 +49,7 @@ class DarkModeColors {
   static const darkShadow = Color(0xFF000000);
   static const darkSurface = Color(0xFF0D1117);
   static const darkOnSurface = Color(0xFFE1E6EA);
-  static const darkAppBarBackground = Color(0xFF1565C0);
+  static const darkAppBarBackground = Color(0xFFFF5722);
   
   // Content type colors (darker variants for dark mode)
   static const tutorial = Color(0xFF673AB7);

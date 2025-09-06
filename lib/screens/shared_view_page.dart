@@ -8,11 +8,7 @@ class SharedViewPage extends StatefulWidget {
   final String userId;
   final String? userName;
 
-  const SharedViewPage({
-    super.key,
-    required this.userId,
-    this.userName,
-  });
+  const SharedViewPage({super.key, required this.userId, this.userName});
 
   @override
   State<SharedViewPage> createState() => _SharedViewPageState();
@@ -39,98 +35,67 @@ class _SharedViewPageState extends State<SharedViewPage> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load shared content: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load shared content: $e'), backgroundColor: Colors.red));
       }
     }
   }
 
-  void _changeMonth(DateTime newMonth) {
-    setState(() {
-      _currentMonth = newMonth;
-    });
-  }
+  void _changeMonth(DateTime newMonth) => setState(() => _currentMonth = newMonth);
 
-  List<ContentItem> get _undatedItems =>
-      _contentItems.where((item) => item.dateScheduled == null).toList();
+  List<ContentItem> get _undatedItems => _contentItems.where((item) => item.dateScheduled == null).toList();
 
-  List<ContentItem> _getItemsForDate(DateTime date) => _contentItems
-      .where((item) =>
-          item.dateScheduled != null &&
-          item.dateScheduled!.year == date.year &&
-          item.dateScheduled!.month == date.month &&
-          item.dateScheduled!.day == date.day)
+  bool _sameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  List<ContentItem> _getItemsForDate(DateTime date) => _contentItems.where((item) {
+        final published = item.datePublished;
+        final scheduled = item.dateScheduled;
+        if (published != null) return _sameDay(published, date);
+        if (scheduled != null) return _sameDay(scheduled, date);
+        return false;
+      }).toList();
+
+  List<ContentItem> _getGhostItemsForDate(DateTime date) => _contentItems.where((item) {
+        final published = item.datePublished;
+        final scheduled = item.dateScheduled;
+        if (published == null || scheduled == null) return false;
+        if (_sameDay(published, scheduled)) return false;
+        return _sameDay(scheduled, date);
+      }).toList();
+
+  List<CalendarLink> _getConnections() => _contentItems
+      .where((item) => item.datePublished != null && item.dateScheduled != null && !_sameDay(item.datePublished!, item.dateScheduled!))
+      .map((item) => CalendarLink(scheduledDate: item.dateScheduled!, publishedDate: item.datePublished!, item: item))
       .toList();
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     final isMobile = MediaQuery.of(context).size.width < 768;
 
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset(
-          'assets/images/v0-horiz.png',
-          height: 40,
-          fit: BoxFit.contain,
-        ),
+        title: Image.asset('assets/images/v0-horiz.png', height: 40, fit: BoxFit.contain),
         centerTitle: true,
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: const Chip(
-              label: Text('View Only'),
-              backgroundColor: Colors.orange,
-              labelStyle: TextStyle(color: Colors.white),
-            ),
+        actions: [Container(margin: const EdgeInsets.only(right: 16), child: const Chip(label: Text('View Only'), backgroundColor: Colors.orange, labelStyle: TextStyle(color: Colors.white)))]),
+      body: Flex(direction: isMobile ? Axis.vertical : Axis.horizontal, children: [
+        if (isMobile)
+          Expanded(child: UndatedContentPanel(items: _undatedItems, allItems: _contentItems, isReadOnly: true))
+        else
+          SizedBox(width: 350, child: UndatedContentPanel(items: _undatedItems, allItems: _contentItems, isReadOnly: true)),
+        if (isMobile) const Divider(height: 1) else const VerticalDivider(width: 1),
+        Expanded(
+          child: CalendarPanel(
+            currentMonth: _currentMonth,
+            onMonthChange: _changeMonth,
+            getItemsForDate: _getItemsForDate,
+            getGhostItemsForDate: _getGhostItemsForDate,
+            connections: _getConnections(),
+            isReadOnly: true,
           ),
-        ],
-      ),
-      body: Flex(
-        direction: isMobile ? Axis.vertical : Axis.horizontal,
-        children: [
-          if (isMobile)
-            Expanded(
-              child: UndatedContentPanel(
-                items: _undatedItems,
-                allItems: _contentItems,
-                isReadOnly: true, // This will hide add/edit buttons
-              ),
-            )
-          else
-            // Fixed width for undated panel in tablet/desktop to give calendar more space
-            SizedBox(
-              width: 350,
-              child: UndatedContentPanel(
-                items: _undatedItems,
-                allItems: _contentItems,
-                isReadOnly: true, // This will hide add/edit buttons
-              ),
-            ),
-          if (isMobile) 
-            const Divider(height: 1)
-          else
-            const VerticalDivider(width: 1),
-          Expanded(
-            child: CalendarPanel(
-              currentMonth: _currentMonth,
-              onMonthChange: _changeMonth,
-              getItemsForDate: _getItemsForDate,
-              isReadOnly: true, // This will hide add/edit buttons
-            ),
-          ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 }
